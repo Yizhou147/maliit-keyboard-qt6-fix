@@ -53,6 +53,17 @@ done
 shell_plugin="$BUILD_DIR/framework/src/qt/plugins/shellintegration/inputpanelshellplugin.cpp"
 sed -i 's|Q_PLUGIN_METADATA(IID QWaylandShellIntegrationFactoryInterface_iid|Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QWaylandShellIntegrationFactoryInterface.5.0"|' "$shell_plugin"
 
+# Install input-panel protocol (removed from wayland-protocols 1.47+)
+echo ">>> Installing input-panel-unstable-v1 protocol..."
+PROTOCOL_DIR="/usr/share/wayland-protocols/unstable/input-panel"
+mkdir -p "$PROTOCOL_DIR"
+cp "$(dirname "$0")/src/input-panel-unstable-v1.xml" "$PROTOCOL_DIR/"
+
+# Patch CMakeLists.txt to generate input-panel protocol bindings
+echo ">>> Patching CMakeLists.txt for input-panel protocol..."
+FRAMEWORK_CMAKE="$BUILD_DIR/framework/CMakeLists.txt"
+sed -i '/ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL.*input-method-unstable-v1.xml/a\  ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL ${WAYLANDPROTOCOLS_PATH}\/unstable\/input-panel\/input-panel-unstable-v1.xml BASENAME input-panel-unstable-v1)' "$FRAMEWORK_CMAKE"
+
 echo ">>> Building inputpanel-shell..."
 mkdir -p "$BUILD_DIR/build"
 cd "$BUILD_DIR/build"
