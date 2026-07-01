@@ -125,36 +125,13 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
 
     # Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include.
-    # Add #include <QtCore/QtGlobal> to the generated files before compilation.
-    # Use bash -c to avoid shell interpreting < > as redirection.
-    add_custom_command(
-        OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
-        COMMAND bash -c "sed -e '1i\\\\#include <QtCore/QtGlobal>' ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp"
-        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
-    )
-    add_custom_command(
-        OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h
-        COMMAND bash -c "sed -e '1i\\\\#include <QtCore/QtGlobal>' ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h"
-        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h
-    )
-    # Replace the original files with fixed versions in the source list
-    list(REMOVE_ITEM INPUT_PANEL_SHELL_SOURCES
-         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
-         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
+    # Fixed in build.sh via sed before compilation.
     list(APPEND INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h)
 
-    # Fix: the Qt wrapper includes qwayland-wlr-layer-shell-unstable-v1.h but
-    # ecm_add_qtwayland_client_protocol only generates wayland-wlr-layer-shell-client-protocol.h.
-    # Create a copy for the Qt wrapper header.
-    add_custom_command(
-        OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
-        COMMAND ${{CMAKE_COMMAND}} -E copy
-            ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
-            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
-        DEPENDS ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
-    )
+    # Fix: Qt wrapper expects qwayland-wlr-layer-shell-unstable-v1.h but ecm generates
+    # wayland-wlr-layer-shell-client-protocol.h. Fixed in build.sh via cp.
     list(APPEND INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h)
 
@@ -219,6 +196,30 @@ cmake "$BUILD_DIR/framework" \
     -Denable-docs=OFF \
     -Denable-tests=OFF \
     -Denable-examples=OFF
+
+# Fix: qtwaylandscanner generates files with incorrect include paths
+# - qwayland-wlr-layer-shell.cpp includes qwayland-wlr-layer-shell-unstable-v1.h (C protocol)
+#   but should include qwayland-wlr-layer-shell.h (Qt wrapper)
+# - qwayland-wlr-layer-shell.h includes wayland-wlr-layer-shell-unstable-v1-client-protocol.h
+#   but should include wayland-wlr-layer-shell-client-protocol.h
+echo ">>> Fixing generated Qt wrapper includes..."
+sed -i 's/#include "qwayland-wlr-layer-shell-unstable-v1.h"/#include "qwayland-wlr-layer-shell.h"/g' \
+    "$BUILD_DIR/build/qwayland-wlr-layer-shell.cpp"
+sed -i 's/wayland-wlr-layer-shell-unstable-v1-client-protocol.h/wayland-wlr-layer-shell-client-protocol.h/g' \
+    "$BUILD_DIR/build/qwayland-wlr-layer-shell.h"
+
+# Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include
+echo ">>> Adding QtGlobal includes to generated files..."
+sed -e '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.cpp" > \
+    "$BUILD_DIR/build/qwayland-wlr-layer-shell-fixed.cpp"
+sed -e '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.h" > \
+    "$BUILD_DIR/build/qwayland-wlr-layer-shell-fixed.h"
+
+# Fix: Qt wrapper expects qwayland-wlr-layer-shell-unstable-v1.h but ecm generates
+# wayland-wlr-layer-shell-client-protocol.h. Create the expected header.
+echo ">>> Creating protocol header copy..."
+cp "$BUILD_DIR/build/wayland-wlr-layer-shell-client-protocol.h" \
+    "$BUILD_DIR/build/qwayland-wlr-layer-shell-unstable-v1.h"
 
 make -j"$JOBS" inputpanel-shell
 
