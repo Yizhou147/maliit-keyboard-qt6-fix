@@ -111,15 +111,15 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.h)
 
     ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL {layer_xml} BASENAME wlr-layer-shell)
-    # Fix: the Qt wrapper includes a nonexistent header. Create a symlink after generation.
-    # Fix: Qt wrapper includes nonexistent qwayland-wlr-layer-shell-unstable-v1.h
-    # Create it as a copy of the real generated header
+    # Note: Qt Wayland Scanner generates qwayland-wlr-layer-shell-unstable-v1-fixed.h
+    # (the -fixed suffix appears when XML was modified).
+    # Create qwayland-wlr-layer-shell-unstable-v1.h as a copy of the -fixed version.
     add_custom_command(
         OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
         COMMAND ${{CMAKE_COMMAND}} -E copy
-            ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
+            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1-fixed.h
             ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
-        DEPENDS ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
+        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1-fixed.h
     )
     list(APPEND INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h)
