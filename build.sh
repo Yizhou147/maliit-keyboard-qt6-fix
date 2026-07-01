@@ -21,9 +21,10 @@ apt-get install -y --no-install-recommends \
     build-essential cmake pkg-config git \
     qt6-base-dev qt6-base-dev-tools \
     qt6-base-private-dev \
+    qt6-declarative-dev qt6-declarative-private-dev \
     qt6-wayland-dev qt6-wayland-private-dev \
     wayland-protocols libwayland-dev \
-    libglib2.0-dev \
+    libglib2.0-dev libxkbcommon-dev \
     devscripts debhelper \
     && rm -rf /var/lib/apt/lists/*
 
