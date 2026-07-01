@@ -124,6 +124,30 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
 
+    # Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include.
+    # Add #include <QtCore/QtGlobal> to the generated files before compilation.
+    add_custom_command(
+        OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
+        COMMAND sed -e "1i\\\\#include <QtCore/QtGlobal>"
+            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
+            > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
+        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
+    )
+    add_custom_command(
+        OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h
+        COMMAND sed -e "1i\\\\#include <QtCore/QtGlobal>"
+            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h
+            > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h
+        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h
+    )
+    # Replace the original files with fixed versions in the source list
+    list(REMOVE_ITEM INPUT_PANEL_SHELL_SOURCES
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
+    list(APPEND INPUT_PANEL_SHELL_SOURCES
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h)
+
     # Fix: the Qt wrapper includes qwayland-wlr-layer-shell-unstable-v1.h but
     # ecm_add_qtwayland_client_protocol only generates wayland-wlr-layer-shell-client-protocol.h.
     # Create a copy for the Qt wrapper header.
