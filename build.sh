@@ -126,18 +126,15 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
 
     # Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include.
     # Add #include <QtCore/QtGlobal> to the generated files before compilation.
+    # Use bash -c to avoid shell interpreting < > as redirection.
     add_custom_command(
         OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
-        COMMAND sed -e "1i\\\\#include <QtCore/QtGlobal>"
-            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
-            > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
+        COMMAND bash -c "sed -e '1i\\\\#include <QtCore/QtGlobal>' ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp"
         DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
     )
     add_custom_command(
         OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h
-        COMMAND sed -e "1i\\\\#include <QtCore/QtGlobal>"
-            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h
-            > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h
+        COMMAND bash -c "sed -e '1i\\\\#include <QtCore/QtGlobal>' ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h > ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h"
         DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h
     )
     # Replace the original files with fixed versions in the source list
