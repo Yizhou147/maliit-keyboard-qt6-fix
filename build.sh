@@ -101,20 +101,14 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.cpp
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.h)
 
-    # Generate raw C protocol header/source using qtwaylandscanner
-    set(LAYER_SHELL_XML "{layer_xml}")
-    set(LAYER_SHELL_GEN ${{CMAKE_BINARY_DIR}})
-    add_custom_command(
-        OUTPUT ${{LAYER_SHELL_GEN}}/wayland-wlr-layer-shell-client-protocol.h
-               ${{LAYER_SHELL_GEN}}/wayland-wlr-layer-shell-protocol.c
-        COMMAND ${{QtWaylandScanner_EXECUTABLE}} --client-header ${{LAYER_SHELL_XML}}
-                ${{LAYER_SHELL_GEN}}/wayland-wlr-layer-shell-client-protocol.h
-        COMMAND ${{QtWaylandScanner_EXECUTABLE}} --client-code ${{LAYER_SHELL_XML}}
-                ${{LAYER_SHELL_GEN}}/wayland-wlr-layer-shell-protocol.c
-        DEPENDS ${{LAYER_SHELL_XML}}
+    ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL {layer_xml} BASENAME wlr-layer-shell)
+    # Fix: the Qt wrapper includes a nonexistent header. Create a symlink after generation.
+    add_custom_command(TARGET inputpanel-shell POST_BUILD
+        COMMAND ${{CMAKE_COMMAND}} -E create_symlink
+            ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
+            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
+        COMMENT "Creating protocol header symlink"
     )
-    list(APPEND INPUT_PANEL_SHELL_SOURCES
-         ${{LAYER_SHELL_GEN}}/wayland-wlr-layer-shell-protocol.c)
 
     add_library(inputpanel-shell MODULE ${{INPUT_PANEL_SHELL_SOURCES}})
     target_link_libraries(inputpanel-shell Qt${{QT_VERSION_MAJOR}}::WaylandClient PkgConfig::XKBCOMMON Wayland::Client)
