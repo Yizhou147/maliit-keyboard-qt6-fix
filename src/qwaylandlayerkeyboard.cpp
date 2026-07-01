@@ -5,7 +5,6 @@
 #include "qwaylandlayerkeyboard.h"
 
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
-#include <QtWaylandClient/private/qwaylandscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,18 +75,17 @@ QWaylandLayerKeyboardSurface::QWaylandLayerKeyboardSurface(
         ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
         ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT);
 
-    // Set exclusive zone to reserve space (keyboard height, typically ~300px)
-    // Using 0 means the compositor decides; using -1 means no exclusive zone
+    // Set exclusive zone -1 means no exclusive zone (keyboard floats over content)
     zwlr_layer_surface_v1_set_exclusive_zone(m_layerSurface, -1);
 
-    // Set keyboard interactivity so the keyboard can receive input
+    // Set keyboard interactivity
     zwlr_layer_surface_v1_set_keyboard_interactivity(m_layerSurface,
         ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND);
 
-    // Set size: full width, ~300px height (compositor may override)
+    // Set size: full width (0 = compositor decides), ~300px height
     zwlr_layer_surface_v1_set_size(m_layerSurface, 0, 300);
 
-    // Set margin to push it from the very bottom edge
+    // Set margin
     zwlr_layer_surface_v1_set_margin(m_layerSurface, 0, 0, 0, 0);
 
     // Commit the initial state

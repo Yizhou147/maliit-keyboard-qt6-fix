@@ -5,7 +5,6 @@
 #include "qwaylandlayerkeyboard.h"
 
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
-#include <QtWaylandClient/private/qwaylandscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -36,7 +35,7 @@ bool QWaylandLayerKeyboardIntegration::initialize(QWaylandDisplay *display)
     for (auto global : globals) {
         if (global.interface == QLatin1String("zwlr_layer_shell_v1")) {
             m_layerShell = static_cast<struct zwlr_layer_shell_v1 *>(
-                wl_registry_bind(display->wl_registry(), global.name,
+                wl_registry_bind(display->wl_registry(), global.id,
                                  &zwlr_layer_shell_v1_interface, 1));
             break;
         }
@@ -64,11 +63,8 @@ QWaylandShellSurface *QWaylandLayerKeyboardIntegration::createShellSurface(QWayl
         return nullptr;
     }
 
-    // Get the output (screen) for positioning
+    // Get the output (screen) for positioning - can be null (compositor chooses)
     struct wl_output *output = nullptr;
-    if (auto *screen = window->screen()) {
-        output = screen->output();
-    }
 
     qCDebug(qLcLayerKbInteg) << "creating layer keyboard surface";
     return new QWaylandLayerKeyboardSurface(wlsurface, m_layerShell, output, window);

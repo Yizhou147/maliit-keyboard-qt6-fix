@@ -5,7 +5,10 @@
 #pragma once
 
 #include <QtWaylandClient/private/qwaylandshellintegration_p.h>
+
+#define namespace wl_namespace
 #include <wayland-wlr-layer-shell-client-protocol.h>
+#undef namespace
 
 QT_BEGIN_NAMESPACE
 namespace QtWaylandClient {

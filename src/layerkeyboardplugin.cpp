@@ -29,4 +29,4 @@ QWaylandShellIntegration *QWaylandLayerKeyboardPlugin::create(const QString &key
 
 QT_END_NAMESPACE
 
-#include "layerkeyboardplugin.moc"
+#include "inputpanelshellplugin.moc"

@@ -5,7 +5,12 @@
 #pragma once
 
 #include <QtWaylandClient/private/qwaylandshellsurface_p.h>
+
+// 'namespace' is a C++ keyword but used as a parameter name in the C protocol header.
+// Work around it by redefining before include and restoring after.
+#define namespace wl_namespace
 #include <wayland-wlr-layer-shell-client-protocol.h>
+#undef namespace
 
 QT_BEGIN_NAMESPACE
 namespace QtWaylandClient {
@@ -20,8 +25,6 @@ public:
     ~QWaylandLayerKeyboardSurface() override;
 
     void applyConfigure() override;
-    bool isEmbedded() const override { return false; }
-    Popup *getPopup() override { return nullptr; }
 
 private:
     struct zwlr_layer_surface_v1 *m_layerSurface = nullptr;
