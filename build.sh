@@ -74,10 +74,12 @@ fi
 echo ">>> Using protocol: $LAYER_SHELL_XML"
 
 # Fix: 'namespace' is a C++ keyword but used as parameter name in wlr-layer-shell XML.
-# Rename to 'ns' in a local copy so the generated C code compiles as C++.
-FIXED_XML="$BUILD_DIR/wlr-layer-shell-unstable-v1-fixed.xml"
-sed 's/name="namespace"/name="ns"/g' "$LAYER_SHELL_XML" > "$FIXED_XML"
-LAYER_SHELL_XML="$FIXED_XML"
+# Rename to 'ns' in a local copy, keeping the original filename so Scanner generates
+# standard filenames (qwayland-wlr-layer-shell-unstable-v1.h, not -fixed.h).
+FIXED_XML_DIR="$BUILD_DIR/protocol_fixed"
+mkdir -p "$FIXED_XML_DIR"
+sed 's/name="namespace"/name="ns"/g' "$LAYER_SHELL_XML" > "$FIXED_XML_DIR/wlr-layer-shell-unstable-v1.xml"
+LAYER_SHELL_XML="$FIXED_XML_DIR/wlr-layer-shell-unstable-v1.xml"
 
 # Fix: 'namespace' is a C++ keyword but used as parameter name in the protocol XML.
 # Rename it to 'ns' in a local copy before building.
@@ -111,15 +113,15 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.h)
 
     ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL {layer_xml} BASENAME wlr-layer-shell)
-    # Note: Qt Wayland Scanner generates qwayland-wlr-layer-shell-unstable-v1-fixed.h
-    # (the -fixed suffix appears when XML was modified).
-    # Create qwayland-wlr-layer-shell-unstable-v1.h as a copy of the -fixed version.
+    # Fix: the Qt wrapper includes qwayland-wlr-layer-shell-unstable-v1.h but
+    # ecm_add_qtwayland_client_protocol only generates wayland-wlr-layer-shell-client-protocol.h.
+    # Create a symlink for the Qt wrapper header.
     add_custom_command(
         OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
         COMMAND ${{CMAKE_COMMAND}} -E copy
-            ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1-fixed.h
+            ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
             ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
-        DEPENDS ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1-fixed.h
+        DEPENDS ${{CMAKE_BINARY_DIR}}/wayland-wlr-layer-shell-client-protocol.h
     )
     list(APPEND INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h)
