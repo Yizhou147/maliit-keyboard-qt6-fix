@@ -37,6 +37,13 @@ echo ">>> Applying inputpanel-shell fix..."
 cp src/qwaylandinputpanelsurface.cpp "$BUILD_DIR/framework/src/qt/plugins/shellintegration/"
 cp src/qwaylandinputpanelsurface.h "$BUILD_DIR/framework/src/qt/plugins/shellintegration/"
 
+# input-panel-unstable-v1 was merged into input-method-unstable-v1,
+# fix includes to use the already-generated header
+sed -i 's/qwayland-input-panel-unstable-v1\.h/qwayland-input-method-unstable-v1.h/' \
+    "$BUILD_DIR/framework/src/qt/plugins/shellintegration/qwaylandinputpanelsurface.h"
+sed -i 's/qwayland-input-panel-unstable-v1\.h/qwayland-input-method-unstable-v1.h/' \
+    "$BUILD_DIR/framework/src/qt/plugins/shellintegration/qwaylandinputpanelshellintegration.h"
+
 # Copy private headers (same as maliit-keyboard-qt6-builder)
 qt6_inc="/usr/include/$(uname -m)-linux-gnu/qt6"
 for module_dir in "$qt6_inc"/*/; do
