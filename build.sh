@@ -113,9 +113,20 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.h)
 
     ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL {layer_xml} BASENAME wlr-layer-shell)
+
+    # ecm_add_qtwayland_client_protocol generates:
+    #   - wayland-wlr-layer-shell-protocol.c (C code, added by ecm)
+    #   - wayland-wlr-layer-shell-client-protocol.h (C header, added by ecm)
+    #   - qwayland-wlr-layer-shell.cpp (Qt C++ wrapper, NOT added by ecm)
+    #   - qwayland-wlr-layer-shell.h (Qt C++ header, NOT added by ecm)
+    # We need to manually add the Qt wrapper files.
+    list(APPEND INPUT_PANEL_SHELL_SOURCES
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
+         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
+
     # Fix: the Qt wrapper includes qwayland-wlr-layer-shell-unstable-v1.h but
     # ecm_add_qtwayland_client_protocol only generates wayland-wlr-layer-shell-client-protocol.h.
-    # Create a symlink for the Qt wrapper header.
+    # Create a copy for the Qt wrapper header.
     add_custom_command(
         OUTPUT ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h
         COMMAND ${{CMAKE_COMMAND}} -E copy
