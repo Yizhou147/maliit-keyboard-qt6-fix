@@ -1,13 +1,14 @@
 FROM ubuntu:26.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake pkg-config git \
+    build-essential cmake pkg-config git curl \
     qt6-base-dev qt6-base-dev-tools \
     qt6-base-private-dev \
     qt6-declarative-dev qt6-declarative-private-dev \
     qt6-wayland-dev qt6-wayland-private-dev \
     wayland-protocols libwayland-dev \
     libglib2.0-dev libxkbcommon-dev \
+    extra-cmake-modules \
     devscripts debhelper \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
