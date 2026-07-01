@@ -29,13 +29,11 @@ void QWaylandLayerKeyboardSurface::handleConfigure(void *data,
     self->m_height = height;
     self->m_configured = true;
 
-    // Acknowledge the configure
+    // Acknowledge the configure - this is REQUIRED, but do NOT commit here
+    // Qt's window system handles surface commits automatically
+    // Committing here causes an infinite loop:
+    //   configure → ack + commit → compositor sends configure again → ...
     zwlr_layer_surface_v1_ack_configure(surface, serial);
-
-    // Commit so the compositor applies the size
-    if (self->window()) {
-        wl_surface_commit(self->window()->wlSurface());
-    }
 }
 
 void QWaylandLayerKeyboardSurface::handleClosed(void *data,
