@@ -81,9 +81,6 @@ LAYER_SHELL_XML="$FIXED_XML"
 
 # Fix: 'namespace' is a C++ keyword but used as parameter name in the protocol XML.
 # Rename it to 'ns' in a local copy before building.
-FIXED_XML="$BUILD_DIR/wlr-layer-shell-unstable-v1-fixed.xml"
-sed 's/name="namespace"/name="ns"/g' "$LAYER_SHELL_XML" > "$FIXED_XML"
-LAYER_SHELL_XML="$FIXED_XML"
 
 # ============================================================
 # Patch CMakeLists.txt
@@ -113,7 +110,7 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.cpp
             src/qt/plugins/shellintegration/qwaylandlayerkeyboard.h)
 
-    ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL ${{LAYER_SHELL_XML}} BASENAME wlr-layer-shell)
+    ecm_add_qtwayland_client_protocol(INPUT_PANEL_SHELL_SOURCES PROTOCOL {layer_xml} BASENAME wlr-layer-shell)
     # Fix: the Qt wrapper includes a nonexistent header. Create a symlink after generation.
     # Fix: Qt wrapper includes nonexistent qwayland-wlr-layer-shell-unstable-v1.h
     # Create it as a copy of the real generated header
@@ -226,3 +223,4 @@ chmod 755 "$pkg_dir/DEBIAN/postinst"
 
 dpkg-deb --build "$pkg_dir" "$OUTPUT_DIR/maliit-layer-keyboard_2.0.0_arm64.deb"
 echo "=== Build complete: $OUTPUT_DIR/maliit-layer-keyboard_2.0.0_arm64.deb ==="
+
