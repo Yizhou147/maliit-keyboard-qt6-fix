@@ -124,17 +124,6 @@ new_block = f'''set(INPUT_PANEL_SHELL_SOURCES
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.cpp
          ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell.h)
 
-    # Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include.
-    # Fixed in build.sh via sed before compilation.
-    list(APPEND INPUT_PANEL_SHELL_SOURCES
-         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.cpp
-         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-fixed.h)
-
-    # Fix: Qt wrapper expects qwayland-wlr-layer-shell-unstable-v1.h but ecm generates
-    # wayland-wlr-layer-shell-client-protocol.h. Fixed in build.sh via cp.
-    list(APPEND INPUT_PANEL_SHELL_SOURCES
-         ${{CMAKE_BINARY_DIR}}/qwayland-wlr-layer-shell-unstable-v1.h)
-
     add_library(inputpanel-shell MODULE ${{INPUT_PANEL_SHELL_SOURCES}})
     target_link_libraries(inputpanel-shell Qt${{QT_VERSION_MAJOR}}::WaylandClient PkgConfig::XKBCOMMON Wayland::Client)
     if (Qt6_FOUND)
@@ -209,11 +198,9 @@ sed -i 's/wayland-wlr-layer-shell-unstable-v1-client-protocol.h/wayland-wlr-laye
     "$BUILD_DIR/build/qwayland-wlr-layer-shell.h"
 
 # Fix: ECM's qtwaylandscanner generates .cpp files without QtGlobal include
-echo ">>> Adding QtGlobal includes to generated files..."
-sed -e '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.cpp" > \
-    "$BUILD_DIR/build/qwayland-wlr-layer-shell-fixed.cpp"
-sed -e '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.h" > \
-    "$BUILD_DIR/build/qwayland-wlr-layer-shell-fixed.h"
+echo ">>> Adding QtGlobal includes to generated files (in-place)..."
+sed -i '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.cpp"
+sed -i '1i\#include <QtCore/QtGlobal>' "$BUILD_DIR/build/qwayland-wlr-layer-shell.h"
 
 # Fix: Qt wrapper expects qwayland-wlr-layer-shell-unstable-v1.h but ecm generates
 # wayland-wlr-layer-shell-client-protocol.h. Create the expected header.
