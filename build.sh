@@ -190,7 +190,7 @@ cmake "$BUILD_DIR/framework" \
 # Replace with string literal
 echo ">>> Fixing plugin IID..."
 sed -i 's/QWaylandShellIntegrationFactoryInterface_iid/"org.qt-project.Qt.QWaylandShellIntegrationFactoryInterface.5.0"/g' \
-    "$BUILD_DIR/framework/src/qt/plugins/shellintegration/layerkeyboardplugin.cpp"
+    "$BUILD_DIR/framework/src/qt/plugins/shellintegration/inputpanelshellplugin.cpp"
 
 # Fix: qtwaylandscanner generates files with incorrect include paths
 # - qwayland-wlr-layer-shell.cpp includes qwayland-wlr-layer-shell-unstable-v1.h (C protocol)
